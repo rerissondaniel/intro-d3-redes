@@ -78,6 +78,7 @@
 		var
 		    width = 1000,
 		    height = 1000;
+		const MIN_POPULARITY = 35;
 
 		var svg = d3.select("#chart")
 				.append("svg")
@@ -95,8 +96,7 @@
 		d3.json("artistas-semelhantes.json", function(error, graph) {
 		  if (error) throw error;
 
-			console.dir(graph.edges);
-			console.dir(graph.nodes);
+		  graph = filterNotSoPopulars(graph);
 
 		  var link = svg.append("g")
 		      .attr("class", "link")
@@ -109,7 +109,7 @@
 		    .selectAll("circle")
 		    	.data(graph.nodes)
 		    .enter().append("circle")
-		      .attr("r", 5)
+		      .attr("r", node => node.size / 7)
 		      .attr("fill", function(d) { return color(d.group); })
 		      .call(d3.drag()
 		          .on("start", dragstarted)
@@ -154,6 +154,17 @@
 		  if (!d3.event.active) simulation.alphaTarget(0);
 		  d.fx = null;
 		  d.fy = null;
+		}
+
+		function filterNotSoPopulars(graph){
+			let removed = [];
+			graph.nodes = graph.nodes.filter(elem => {
+				if(elem.size > MIN_POPULARITY)return true;
+				removed.push(elem.id);
+				return false;
+			});
+			graph.edges = graph.edges.filter(elem => removed.indexOf(elem.source) === -1 && removed.indexOf(elem.target) === -1);
+			return graph;
 		}
 
 </script>
