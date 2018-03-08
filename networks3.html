@@ -88,13 +88,20 @@
 
 		var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-		var simulation = d3.forceSimulation()
-		    .force("link", d3.forceLink().id(function(d) { return d.id; }))
-		    .force("charge", d3.forceManyBody())
-		    .force("center", d3.forceCenter(width / 2, height / 2));
+		var simulation = d3.forceSimulation();
+
+		const forces = {
+			charge: {
+				strength: -200,
+				dMin: 5,
+				dMax: 300
+			}
+		}
 
 		d3.json("artistas-semelhantes.json", function(error, graph) {
 		  if (error) throw error;
+		  
+		  applyForces(simulation);
 
 		  graph = filterNotSoPopulars(graph);
 
@@ -165,6 +172,18 @@
 			});
 			graph.edges = graph.edges.filter(elem => removed.indexOf(elem.source) === -1 && removed.indexOf(elem.target) === -1);
 			return graph;
+		}
+
+		function applyForces(simulation){
+			simulation.force("link", d3.forceLink().id(function(d) { return d.id; }))
+		    
+		    simulation.force("charge", d3.forceManyBody()
+		    	.strength(forces.charge.strength)
+		    	.distanceMin(forces.charge.dMin)
+        		.distanceMax(forces.charge.dMax)
+        	);
+        	
+		    simulation.force("center", d3.forceCenter(width / 2, height / 2));
 		}
 
 </script>
